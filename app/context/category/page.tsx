@@ -173,7 +173,7 @@ export default function CategoryPage() {
           <p className="text-muted-foreground mt-2">Manage item categories</p>
         </div>
         <div className="flex gap-2" ref={buttonsRef}>
-          {user.role === 'admin' && !selectedCategory && (
+          {user.role === 'admin' && (
             <>
               <Button 
                 className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
