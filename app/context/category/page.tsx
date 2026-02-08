@@ -12,7 +12,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 interface Category {
   category_id: number;
   category_name: string;
-  description?: string;
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -81,12 +80,7 @@ export default function CategoryPage() {
           {user.role === 'admin' && <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Category</Button>}
         </div>
 
-        <Card className="border-primary/20 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20">
-            <CardTitle>Categories List</CardTitle>
-            <CardDescription>All product categories ({categories.length} total)</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-5">
             {loading ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">Loading categories...</p>
@@ -96,27 +90,27 @@ export default function CategoryPage() {
                 <div className="overflow-hidden rounded-lg border border-primary/20">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 hover:bg-gradient-to-r hover:from-primary/15 hover:to-primary/10">
-                        <TableHead className="font-bold text-foreground w-16">No.</TableHead>
-                        <TableHead className="font-bold text-foreground">Category Name</TableHead>
-                        {user.role === 'admin' && <TableHead className="font-bold text-foreground text-right">Actions</TableHead>}
+                      <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20">
+                        <TableHead className="font-bold text-primary-foreground w-16">No.</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Category Name</TableHead>
+                        {user.role === 'admin' && <TableHead className="font-bold text-primary-foreground text-right">Actions</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedCategories.length === 0 ? (
-                        <TableRow className="hover:bg-primary/5">
+                        <TableRow className="hover:bg-card/50">
                           <TableCell colSpan={user.role === 'admin' ? 3 : 2} className="text-center py-8">
                             <p className="text-muted-foreground">No categories found</p>
                           </TableCell>
                         </TableRow>
                       ) : (
                         paginatedCategories.map((category, index) => (
-                          <TableRow key={category.category_id} className="hover:bg-primary/5 transition-colors border-b border-primary/10">
+                          <TableRow key={category.category_id} className="hover:bg-card/50 transition-colors border-b border-primary/10">
                             <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
-                            <TableCell className="font-medium">{category.category_name}</TableCell>
+                            <TableCell className="font-medium text-foreground">{category.category_name}</TableCell>
                             {user.role === 'admin' && (
                               <TableCell className="text-right">
-                                <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
+                                <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary text-foreground">
                                   Edit
                                 </Button>
                               </TableCell>
@@ -174,7 +168,6 @@ export default function CategoryPage() {
               </div>
             )}
           </CardContent>
-        </Card>
       </div>
     );
   }

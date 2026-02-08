@@ -89,9 +89,9 @@ export default function ItemPage() {
           <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Item</Button>
         </div>
 
-        <Card className="border-primary/20 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20">
-            <CardTitle>Items List</CardTitle>
+        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-foreground">Items List</CardTitle>
             <CardDescription>All items in your inventory ({items.length} total)</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -104,38 +104,38 @@ export default function ItemPage() {
                 <div className="overflow-hidden rounded-lg border border-primary/20">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 hover:bg-gradient-to-r hover:from-primary/15 hover:to-primary/10">
-                        <TableHead className="font-bold text-foreground w-12">No.</TableHead>
-                        <TableHead className="font-bold text-foreground">Item Name</TableHead>
-                        <TableHead className="font-bold text-foreground">Category</TableHead>
-                        <TableHead className="font-bold text-foreground text-center">Stock</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Purchase Price</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Selling Price</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Actions</TableHead>
+                      <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20">
+                        <TableHead className="font-bold text-primary-foreground w-12">No.</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Item Name</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Category</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-center">Stock</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Purchase Price</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Selling Price</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedItems.length === 0 ? (
-                        <TableRow className="hover:bg-primary/5">
+                        <TableRow className="hover:bg-card/50">
                           <TableCell colSpan={7} className="text-center py-8">
                             <p className="text-muted-foreground">No items found</p>
                           </TableCell>
                         </TableRow>
                       ) : (
                         paginatedItems.map((item, index) => (
-                          <TableRow key={item.item_id} className="hover:bg-primary/5 transition-colors border-b border-primary/10">
+                          <TableRow key={item.item_id} className="hover:bg-card/50 transition-colors border-b border-primary/10">
                             <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
-                            <TableCell className="font-medium">{item.item_name}</TableCell>
-                            <TableCell>{item.category_name || 'N/A'}</TableCell>
+                            <TableCell className="font-medium text-foreground">{item.item_name}</TableCell>
+                            <TableCell className="text-foreground">{item.category_name || 'N/A'}</TableCell>
                             <TableCell className="text-center">
-                              <span className={`px-2 py-1 rounded-full inline-block ${item.current_stock < 10 ? 'bg-orange-100 text-orange-700 font-semibold' : 'bg-green-100 text-green-700'}`}>
+                              <span className={`px-2 py-1 rounded-full inline-block ${item.current_stock < 10 ? 'bg-orange-500/20 text-orange-400 font-semibold' : 'bg-green-500/20 text-green-400'}`}>
                                 {item.current_stock}
                               </span>
                             </TableCell>
-                            <TableCell className="text-right">${item.purchase_price.toFixed(2)}</TableCell>
-                            <TableCell className="text-right font-semibold">${item.selling_price.toFixed(2)}</TableCell>
+                            <TableCell className="text-right text-foreground">${item.purchase_price.toFixed(2)}</TableCell>
+                            <TableCell className="text-right font-semibold text-foreground">${item.selling_price.toFixed(2)}</TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
+                              <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary text-foreground">
                                 Edit
                               </Button>
                             </TableCell>

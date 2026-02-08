@@ -86,9 +86,9 @@ export default function StockOutPage() {
           <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Stock Out</Button>
         </div>
 
-        <Card className="border-primary/20 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20">
-            <CardTitle>Stock Out Records</CardTitle>
+        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-foreground">Stock Out Records</CardTitle>
             <CardDescription>All outgoing stock transactions ({stockOut.length} total)</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -101,37 +101,38 @@ export default function StockOutPage() {
                 <div className="overflow-hidden rounded-lg border border-primary/20">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 hover:bg-gradient-to-r hover:from-primary/15 hover:to-primary/10">
-                        <TableHead className="font-bold text-foreground w-12">No.</TableHead>
-                        <TableHead className="font-bold text-foreground">Item</TableHead>
-                        <TableHead className="font-bold text-foreground text-center">Quantity</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Selling Price</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Date</TableHead>
-                        <TableHead className="font-bold text-foreground">User</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Actions</TableHead>
+                      <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20">
+                        <TableHead className="font-bold text-primary-foreground w-12">No.</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Item</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-center">Quantity</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Selling Price</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Date</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">User</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedStockOut.length === 0 ? (
-                        <TableRow className="hover:bg-primary/5">
+                        <TableRow className="hover:bg-card/50">
                           <TableCell colSpan={7} className="text-center py-8">
                             <p className="text-muted-foreground">No stock out records found</p>
                           </TableCell>
                         </TableRow>
                       ) : (
                         paginatedStockOut.map((record, index) => (
-                          <TableRow key={record.stock_out_id} className="hover:bg-primary/5 transition-colors border-b border-primary/10">
+                          <TableRow key={record.stock_out_id} className="hover:bg-card/50 transition-colors border-b border-primary/10">
                             <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
-                            <TableCell className="font-medium">{record.item_name || 'N/A'}</TableCell>
+                            <TableCell className="font-medium text-foreground">{record.item_name || 'N/A'}</TableCell>
                             <TableCell className="text-center">
-                              <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-sm font-semibold\">\n                                {record.quantity}
+                              <span className="bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full text-sm font-semibold">
+                                {record.quantity}
                               </span>
                             </TableCell>
-                            <TableCell className="text-right font-semibold">${record.selling_price.toFixed(2)}</TableCell>
-                            <TableCell className="text-right\">{new Date(record.date_out).toLocaleDateString()}</TableCell>
-                            <TableCell>{record.username || 'N/A'}</TableCell>
+                            <TableCell className="text-right font-semibold text-foreground">${record.selling_price.toFixed(2)}</TableCell>
+                            <TableCell className="text-right text-foreground">{new Date(record.date_out).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-foreground">{record.username || 'N/A'}</TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
+                              <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary text-foreground">
                                 View
                               </Button>
                             </TableCell>

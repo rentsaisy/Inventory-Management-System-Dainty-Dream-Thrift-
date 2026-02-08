@@ -93,9 +93,9 @@ export default function StaffPage() {
           <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Staff</Button>
         </div>
 
-        <Card className="border-primary/20 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20">
-            <CardTitle>Staff List</CardTitle>
+        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-foreground">Staff List</CardTitle>
             <CardDescription>All staff members in your system ({staff.length} total)</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -108,36 +108,36 @@ export default function StaffPage() {
                 <div className="overflow-hidden rounded-lg border border-primary/20">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 hover:bg-gradient-to-r hover:from-primary/15 hover:to-primary/10">
-                        <TableHead className="font-bold text-foreground w-12">No.</TableHead>
-                        <TableHead className="font-bold text-foreground">Username</TableHead>
-                        <TableHead className="font-bold text-foreground">Role</TableHead>
-                        <TableHead className="font-bold text-foreground">Email</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Actions</TableHead>
+                      <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20">
+                        <TableHead className="font-bold text-primary-foreground w-12">No.</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Username</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Role</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Email</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedStaff.length === 0 ? (
-                        <TableRow className="hover:bg-primary/5">
+                        <TableRow className="hover:bg-card/50">
                           <TableCell colSpan={5} className="text-center py-8">
                             <p className="text-muted-foreground">No staff found</p>
                           </TableCell>
                         </TableRow>
                       ) : (
                         paginatedStaff.map((member, index) => (
-                          <TableRow key={member.user_id} className="hover:bg-primary/5 transition-colors border-b border-primary/10">
+                          <TableRow key={member.user_id} className="hover:bg-card/50 transition-colors border-b border-primary/10">
                             <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
-                            <TableCell className="font-medium">{member.username}</TableCell>
+                            <TableCell className="font-medium text-foreground">{member.username}</TableCell>
                             <TableCell>
                               <span className={`px-2 py-1 rounded-full inline-block text-xs font-semibold ${
-                                member.role_id === 1 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                                member.role_id === 1 ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
                               }`}>
                                 {member.role_id === 1 ? 'Admin' : member.role_id === 2 ? 'Staff' : 'Unknown'}
                               </span>
                             </TableCell>
-                            <TableCell>{member.email || 'N/A'}</TableCell>
+                            <TableCell className="text-foreground">{member.email || 'N/A'}</TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
+                              <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary text-foreground">
                                 Edit
                               </Button>
                             </TableCell>

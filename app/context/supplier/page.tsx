@@ -84,9 +84,9 @@ export default function SupplierPage() {
           {user.role === 'admin' && <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Supplier</Button>}
         </div>
 
-        <Card className="border-primary/20 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20">
-            <CardTitle>Suppliers List</CardTitle>
+        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-foreground">Suppliers List</CardTitle>
             <CardDescription>All suppliers in your system ({suppliers.length} total)</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -99,33 +99,33 @@ export default function SupplierPage() {
                 <div className="overflow-hidden rounded-lg border border-primary/20">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 hover:bg-gradient-to-r hover:from-primary/15 hover:to-primary/10">
-                        <TableHead className="font-bold text-foreground w-12">No.</TableHead>
-                        <TableHead className="font-bold text-foreground">Supplier Name</TableHead>
-                        <TableHead className="font-bold text-foreground">Contact Person</TableHead>
-                        <TableHead className="font-bold text-foreground">Phone</TableHead>
-                        <TableHead className="font-bold text-foreground">Email</TableHead>
-                        {user.role === 'admin' && <TableHead className="font-bold text-foreground text-right">Actions</TableHead>}
+                      <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20">
+                        <TableHead className="font-bold text-primary-foreground w-12">No.</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Supplier Name</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Contact Person</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Phone</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Email</TableHead>
+                        {user.role === 'admin' && <TableHead className="font-bold text-primary-foreground text-right">Actions</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedSuppliers.length === 0 ? (
-                        <TableRow className="hover:bg-primary/5">
+                        <TableRow className="hover:bg-card/50">
                           <TableCell colSpan={user.role === 'admin' ? 6 : 5} className="text-center py-8">
                             <p className="text-muted-foreground">No suppliers found</p>
                           </TableCell>
                         </TableRow>
                       ) : (
                         paginatedSuppliers.map((supplier, index) => (
-                          <TableRow key={supplier.supplier_id} className="hover:bg-primary/5 transition-colors border-b border-primary/10">
+                          <TableRow key={supplier.supplier_id} className="hover:bg-card/50 transition-colors border-b border-primary/10">
                             <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
-                            <TableCell className="font-medium">{supplier.supplier_name}</TableCell>
-                            <TableCell>{supplier.contact_person || 'N/A'}</TableCell>
-                            <TableCell>{supplier.phone || 'N/A'}</TableCell>
-                            <TableCell>{supplier.email || 'N/A'}</TableCell>
+                            <TableCell className="font-medium text-foreground">{supplier.supplier_name}</TableCell>
+                            <TableCell className="text-foreground">{supplier.contact_person || 'N/A'}</TableCell>
+                            <TableCell className="text-foreground">{supplier.phone || 'N/A'}</TableCell>
+                            <TableCell className="text-foreground">{supplier.email || 'N/A'}</TableCell>
                             {user.role === 'admin' && (
                               <TableCell className="text-right">
-                                <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
+                                <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary text-foreground">
                                   Edit
                                 </Button>
                               </TableCell>

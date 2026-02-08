@@ -87,9 +87,9 @@ export default function StockInPage() {
           <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Stock In</Button>
         </div>
 
-        <Card className="border-primary/20 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20">
-            <CardTitle>Stock In Records</CardTitle>
+        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-foreground">Stock In Records</CardTitle>
             <CardDescription>All incoming stock transactions ({stockIn.length} total)</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -102,38 +102,38 @@ export default function StockInPage() {
                 <div className="overflow-hidden rounded-lg border border-primary/20">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 hover:bg-gradient-to-r hover:from-primary/15 hover:to-primary/10">
-                        <TableHead className="font-bold text-foreground w-12">No.</TableHead>
-                        <TableHead className="font-bold text-foreground">Item</TableHead>
-                        <TableHead className="font-bold text-foreground">Supplier</TableHead>
-                        <TableHead className="font-bold text-foreground text-center">Quantity</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Purchase Price</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Date</TableHead>
-                        <TableHead className="font-bold text-foreground text-right">Actions</TableHead>
+                      <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20">
+                        <TableHead className="font-bold text-primary-foreground w-12">No.</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Item</TableHead>
+                        <TableHead className="font-bold text-primary-foreground">Supplier</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-center">Quantity</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Purchase Price</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Date</TableHead>
+                        <TableHead className="font-bold text-primary-foreground text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedStockIn.length === 0 ? (
-                        <TableRow className="hover:bg-primary/5">
+                        <TableRow className="hover:bg-card/50">
                           <TableCell colSpan={7} className="text-center py-8">
                             <p className="text-muted-foreground">No stock in records found</p>
                           </TableCell>
                         </TableRow>
                       ) : (
                         paginatedStockIn.map((record, index) => (
-                          <TableRow key={record.stock_in_id} className="hover:bg-primary/5 transition-colors border-b border-primary/10">
+                          <TableRow key={record.stock_in_id} className="hover:bg-card/50 transition-colors border-b border-primary/10">
                             <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
-                            <TableCell className="font-medium">{record.item_name || 'N/A'}</TableCell>
-                            <TableCell>{record.supplier_name || 'N/A'}</TableCell>
+                            <TableCell className="font-medium text-foreground">{record.item_name || 'N/A'}</TableCell>
+                            <TableCell className="text-foreground">{record.supplier_name || 'N/A'}</TableCell>
                             <TableCell className="text-center">
-                              <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm font-semibold">
+                              <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full text-sm font-semibold">
                                 {record.quantity}
                               </span>
                             </TableCell>
-                            <TableCell className="text-right">${record.purchase_price.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">{new Date(record.date_in).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-right text-foreground">${record.purchase_price.toFixed(2)}</TableCell>
+                            <TableCell className="text-right text-foreground">{new Date(record.date_in).toLocaleDateString()}</TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
+                              <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary text-foreground">
                                 View
                               </Button>
                             </TableCell>
