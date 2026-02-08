@@ -26,7 +26,7 @@ const navSections: NavSection[] = [
     items: [
       {
         label: 'Dashboard',
-        href: '/dashboard',
+        href: '/context/dashboard',
         icon: (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -46,7 +46,7 @@ const navSections: NavSection[] = [
     items: [
       {
         label: 'Item',
-        href: '/item',
+        href: '/context/item',
         icon: (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -60,7 +60,7 @@ const navSections: NavSection[] = [
       },
       {
         label: 'Category',
-        href: '/category',
+        href: '/context/category',
         icon: (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -74,7 +74,7 @@ const navSections: NavSection[] = [
       },
       {
         label: 'Supplier',
-        href: '/supplier',
+        href: '/context/supplier',
         icon: (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -88,7 +88,7 @@ const navSections: NavSection[] = [
       },
       {
         label: 'Staff Management',
-        href: '/staff',
+        href: '/context/staff',
         icon: (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -108,7 +108,7 @@ const navSections: NavSection[] = [
     items: [
     {
       label: 'Item',
-      href: '/item',
+      href: '/context/item',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -122,7 +122,7 @@ const navSections: NavSection[] = [
     },
     {
       label: 'Category',
-      href: '/category',
+      href: '/context/category',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -136,7 +136,7 @@ const navSections: NavSection[] = [
     },
     {
       label: 'Supplier',
-      href: '/supplier',
+      href: '/context/supplier',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -156,7 +156,7 @@ const navSections: NavSection[] = [
     items: [
       {
         label: 'Stock In',
-        href: '/stock-in',
+        href: '/context/stock-in',
         icon: (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -170,7 +170,7 @@ const navSections: NavSection[] = [
       },
       {
         label: 'Stock Out',
-        href: '/stock-out',
+        href: '/context/stock-out',
         icon: (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -190,7 +190,7 @@ const navSections: NavSection[] = [
     items: [
       {
         label: 'Inventory Report',
-        href: '/report',
+        href: '/context/report',
         icon: (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
