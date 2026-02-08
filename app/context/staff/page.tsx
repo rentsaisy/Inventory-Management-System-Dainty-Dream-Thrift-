@@ -223,7 +223,7 @@ export default function StaffPage() {
               className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
               onClick={() => setShowAddDialog(true)}
             >
-              Add Staff
+              Add
             </Button>
             <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogContent className="max-w-md">
@@ -335,7 +335,6 @@ export default function StaffPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card>
         <CardContent className="pt-2">
           {loading ? (
             <div className="text-center py-2">
@@ -463,7 +462,6 @@ export default function StaffPage() {
             </div>
           )}
         </CardContent>
-      </Card>
     </div>
   );
 }

@@ -179,7 +179,7 @@ export default function CategoryPage() {
                 className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                 onClick={() => setShowAddDialog(true)}
               >
-                Add Category
+                Add 
               </Button>
               <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                 <DialogContent>
