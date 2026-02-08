@@ -74,10 +74,6 @@ export default function CategoryPage() {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Categories List</CardTitle>
-            <CardDescription>All product categories</CardDescription>
-          </CardHeader>
           <CardContent>
             {loading ? (
               <div className="text-center py-8">
