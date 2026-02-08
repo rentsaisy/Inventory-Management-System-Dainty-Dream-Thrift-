@@ -89,12 +89,7 @@ export default function ItemPage() {
           <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Item</Button>
         </div>
 
-        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-foreground">Items List</CardTitle>
-            <CardDescription>All items in your inventory ({items.length} total)</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-5">
             {loading ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">Loading items...</p>
@@ -192,7 +187,6 @@ export default function ItemPage() {
               </div>
             )}
           </CardContent>
-        </Card>
       </div>
     );
   }
