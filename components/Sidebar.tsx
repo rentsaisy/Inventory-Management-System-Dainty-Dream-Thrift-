@@ -112,15 +112,6 @@ export default function Sidebar({ role }: { role: UserRole }) {
         ))}
       </nav>
 
-      {/* Footer info */}
-      <div className="p-4 border-t border-primary/20">
-        <p className="text-xs text-muted-foreground text-center">
-          <span className="block font-semibold text-foreground mb-1">Role</span>
-          <span className="inline-block px-2 py-1 bg-primary/20 text-primary rounded-full capitalize font-semibold">
-            {role}
-          </span>
-        </p>
-      </div>
     </aside>
   );
 }
