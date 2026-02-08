@@ -37,16 +37,12 @@ export default function SupplierPage() {
   
   // Add form states
   const [newSupplierName, setNewSupplierName] = useState('');
-  const [newContactPerson, setNewContactPerson] = useState('');
   const [newPhone, setNewPhone] = useState('');
-  const [newEmail, setNewEmail] = useState('');
   const [newAddress, setNewAddress] = useState('');
   
   // Edit form states
   const [editSupplierName, setEditSupplierName] = useState('');
-  const [editContactPerson, setEditContactPerson] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editEmail, setEditEmail] = useState('');
   const [editAddress, setEditAddress] = useState('');
 
   useEffect(() => {
@@ -64,15 +60,11 @@ export default function SupplierPage() {
   useEffect(() => {
     if (showEditDialog && selectedSupplier) {
       setEditSupplierName(selectedSupplier.supplier_name);
-      setEditContactPerson(selectedSupplier.contact_person || '');
       setEditPhone(selectedSupplier.phone || '');
-      setEditEmail(selectedSupplier.email || '');
       setEditAddress(selectedSupplier.address || '');
     } else {
       setEditSupplierName('');
-      setEditContactPerson('');
       setEditPhone('');
-      setEditEmail('');
       setEditAddress('');
     }
   }, [showEditDialog, selectedSupplier]);
@@ -107,17 +99,13 @@ export default function SupplierPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           supplier_name: newSupplierName,
-          contact_person: newContactPerson || null,
           phone: newPhone || null,
-          email: newEmail || null,
           address: newAddress || null,
         }),
       });
       if (res.ok) {
         setNewSupplierName('');
-        setNewContactPerson('');
         setNewPhone('');
-        setNewEmail('');
         setNewAddress('');
         setShowAddDialog(false);
         fetchSuppliers();
@@ -142,9 +130,7 @@ export default function SupplierPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           supplier_name: editSupplierName,
-          contact_person: editContactPerson || null,
           phone: editPhone || null,
-          email: editEmail || null,
           address: editAddress || null,
         }),
       });
@@ -231,19 +217,9 @@ export default function SupplierPage() {
                     onChange={(e) => setNewSupplierName(e.target.value)}
                   />
                   <Input
-                    placeholder="Contact Person"
-                    value={newContactPerson}
-                    onChange={(e) => setNewContactPerson(e.target.value)}
-                  />
-                  <Input
                     placeholder="Phone Number"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
-                  />
-                  <Input
-                    placeholder="Email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
                   />
                   <Input
                     placeholder="Address"
@@ -277,19 +253,9 @@ export default function SupplierPage() {
               onChange={(e) => setEditSupplierName(e.target.value)}
             />
             <Input
-              placeholder="Contact Person"
-              value={editContactPerson}
-              onChange={(e) => setEditContactPerson(e.target.value)}
-            />
-            <Input
               placeholder="Phone Number"
               value={editPhone}
               onChange={(e) => setEditPhone(e.target.value)}
-            />
-            <Input
-              placeholder="Email"
-              value={editEmail}
-              onChange={(e) => setEditEmail(e.target.value)}
             />
             <Input
               placeholder="Address"
@@ -341,16 +307,15 @@ export default function SupplierPage() {
                     <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20 h-10">
                       <TableHead className="font-bold text-primary-foreground w-12 text-sm px-3 py-2">No.</TableHead>
                       <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Supplier Name</TableHead>
-                      <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Contact Person</TableHead>
                       <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Phone</TableHead>
-                      <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Email</TableHead>
+                      <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Address</TableHead>
                       <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedSuppliers.length === 0 ? (
                       <TableRow className="hover:bg-card/50">
-                        <TableCell colSpan={6} className="text-center py-4 h-11">
+                        <TableCell colSpan={5} className="text-center py-4 h-11">
                           <p className="text-muted-foreground text-sm">No suppliers found</p>
                         </TableCell>
                       </TableRow>
@@ -359,9 +324,8 @@ export default function SupplierPage() {
                         <TableRow key={supplier.supplier_id} className="transition-colors border-b border-primary/10 hover:bg-card/50 h-11">
                           <TableCell className="font-semibold text-primary text-sm px-3 py-3">{startIndex + index + 1}</TableCell>
                           <TableCell className="font-medium text-foreground text-sm px-3 py-3">{supplier.supplier_name}</TableCell>
-                          <TableCell className="text-foreground text-sm px-3 py-3">{supplier.contact_person || 'N/A'}</TableCell>
                           <TableCell className="text-foreground text-sm px-3 py-3">{supplier.phone || 'N/A'}</TableCell>
-                          <TableCell className="text-foreground text-sm px-3 py-3">{supplier.email || 'N/A'}</TableCell>
+                          <TableCell className="text-foreground text-sm px-3 py-3">{supplier.address || 'N/A'}</TableCell>
                           <TableCell className="flex gap-1 px-3 py-3 justify-end">
                             {user?.role === 'admin' && (
                               <>

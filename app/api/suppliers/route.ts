@@ -15,7 +15,30 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { supplier_name, contact_person, phone, address } = await request.json();
+    const url = new URL(request.url);
+    const supplierId = url.searchParams.get('id');
+    const body = await request.json();
+    
+    // Update existing supplier
+    if (supplierId) {
+      const { supplier_name, phone, address } = body;
+      
+      if (!supplier_name) {
+        return NextResponse.json(
+          { error: 'Supplier name is required' },
+          { status: 400 }
+        );
+      }
+
+      await query(
+        'UPDATE suppliers SET supplier_name = ?, phone = ?, address = ? WHERE supplier_id = ?',
+        [supplier_name, phone || null, address || null, supplierId]
+      );
+      return NextResponse.json({ success: true });
+    }
+    
+    // Create new supplier
+    const { supplier_name, phone, address } = body;
 
     if (!supplier_name) {
       return NextResponse.json(
@@ -25,13 +48,35 @@ export async function POST(request: Request) {
     }
 
     await query(
-      'INSERT INTO suppliers (supplier_name, contact_person, phone, address) VALUES (?, ?, ?, ?)',
-      [supplier_name, contact_person || null, phone || null, address || null]
+      'INSERT INTO suppliers (supplier_name, phone, address) VALUES (?, ?, ?)',
+      [supplier_name, phone || null, address || null]
     );
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to create supplier' },
+      { error: 'Failed to process supplier request' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const supplierId = url.searchParams.get('id');
+
+    if (!supplierId) {
+      return NextResponse.json(
+        { error: 'Supplier ID is required' },
+        { status: 400 }
+      );
+    }
+
+    await query('DELETE FROM suppliers WHERE supplier_id = ?', [supplierId]);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to delete supplier' },
       { status: 500 }
     );
   }
