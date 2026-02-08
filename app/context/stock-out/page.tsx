@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface StockOut {
   stock_out_id: number;
@@ -19,11 +20,14 @@ interface StockOut {
   username?: string;
 }
 
+const ITEMS_PER_PAGE = 5;
+
 export default function StockOutPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [stockOut, setStockOut] = useState<StockOut[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -68,6 +72,10 @@ export default function StockOutPage() {
     return null;
   }
 
+  const totalPages = Math.ceil(stockOut.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedStockOut = stockOut.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
   return (
     <div className="space-y-8">
         <div className="flex justify-between items-center">
@@ -75,57 +83,108 @@ export default function StockOutPage() {
             <h1 className="text-4xl font-bold tracking-tight">Stock Out</h1>
             <p className="text-muted-foreground mt-2">Record outgoing inventory</p>
           </div>
-          <Button>Add Stock Out</Button>
+          <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Stock Out</Button>
         </div>
 
-        <Card>
-          <CardHeader>
+        <Card className="border-primary/20 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20">
             <CardTitle>Stock Out Records</CardTitle>
-            <CardDescription>All outgoing stock transactions</CardDescription>
+            <CardDescription>All outgoing stock transactions ({stockOut.length} total)</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {loading ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">Loading stock out records...</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Selling Price</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {stockOut.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
-                          <p className="text-muted-foreground">No stock out records found</p>
-                        </TableCell>
+              <div className="space-y-4">
+                <div className="overflow-hidden rounded-lg border border-primary/20">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 hover:bg-gradient-to-r hover:from-primary/15 hover:to-primary/10">
+                        <TableHead className="font-bold text-foreground w-12">No.</TableHead>
+                        <TableHead className="font-bold text-foreground">Item</TableHead>
+                        <TableHead className="font-bold text-foreground text-center">Quantity</TableHead>
+                        <TableHead className="font-bold text-foreground text-right">Selling Price</TableHead>
+                        <TableHead className="font-bold text-foreground text-right">Date</TableHead>
+                        <TableHead className="font-bold text-foreground">User</TableHead>
+                        <TableHead className="font-bold text-foreground text-right">Actions</TableHead>
                       </TableRow>
-                    ) : (
-                      stockOut.map((record) => (
-                        <TableRow key={record.stock_out_id}>
-                          <TableCell className="font-medium">{record.item_name || 'N/A'}</TableCell>
-                          <TableCell>{record.quantity}</TableCell>
-                          <TableCell>${record.selling_price.toFixed(2)}</TableCell>
-                          <TableCell>{new Date(record.date_out).toLocaleDateString()}</TableCell>
-                          <TableCell>{record.username || 'N/A'}</TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm">
-                              View
-                            </Button>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedStockOut.length === 0 ? (
+                        <TableRow className="hover:bg-primary/5">
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <p className="text-muted-foreground">No stock out records found</p>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                      ) : (
+                        paginatedStockOut.map((record, index) => (
+                          <TableRow key={record.stock_out_id} className="hover:bg-primary/5 transition-colors border-b border-primary/10">
+                            <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
+                            <TableCell className="font-medium">{record.item_name || 'N/A'}</TableCell>
+                            <TableCell className="text-center">
+                              <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-sm font-semibold\">\n                                {record.quantity}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">${record.selling_price.toFixed(2)}</TableCell>
+                            <TableCell className="text-right\">{new Date(record.date_out).toLocaleDateString()}</TableCell>
+                            <TableCell>{record.username || 'N/A'}</TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="sm" className="hover:bg-primary/10 hover:text-primary">
+                                View
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-6 px-2">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, stockOut.length)} of {stockOut.length} records
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="flex items-center gap-1"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </Button>
+                      <div className="flex items-center gap-2 px-3">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className={currentPage === page ? 'bg-primary text-white' : ''}
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="flex items-center gap-1"
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
