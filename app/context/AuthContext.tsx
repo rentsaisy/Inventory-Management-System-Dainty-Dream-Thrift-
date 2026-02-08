@@ -14,23 +14,11 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock users for demo
-const MOCK_USERS: Record<string, { password: string; user: User }> = {
-  'admin@thrift.com': {
-    password: 'admin123',
-    user: { id: '1', email: 'admin@thrift.com', name: 'Admin User', role: 'admin' },
-  },
-  'staff@thrift.com': {
-    password: 'staff123',
-    user: { id: '2', email: 'staff@thrift.com', name: 'Staff Member', role: 'staff' },
-  },
-};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -50,13 +38,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const mockUser = MOCK_USERS[email];
-    if (!mockUser || mockUser.password !== password) {
-      throw new Error('Invalid email or password');
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Login failed');
+      }
+
+      const userData = await response.json();
+      setUser(userData);
+      localStorage.setItem('thrift_user', JSON.stringify(userData));
+    } catch (error) {
+      throw error;
     }
-    setUser(mockUser.user);
-    localStorage.setItem('thrift_user', JSON.stringify(mockUser.user));
   };
 
   const logout = () => {

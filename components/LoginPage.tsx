@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +25,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await login(username, password);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -67,15 +67,15 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground font-semibold">
-                Email
+              <Label htmlFor="username" className="text-foreground font-semibold">
+                Username
               </Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="admin@thrift.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoading}
                 className="bg-card border-primary/30 text-foreground placeholder:text-muted-foreground"
               />
@@ -98,27 +98,12 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              disabled={isLoading || !email || !password}
+              disabled={isLoading || !username || !password}
               className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6"
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-
-          {/* Demo credentials */}
-          <div className="mt-8 pt-8 border-t border-primary/20">
-            <p className="text-xs text-muted-foreground mb-3 font-semibold">Demo Credentials:</p>
-            <div className="space-y-2 text-xs text-muted-foreground">
-              <div className="bg-card/50 p-3 rounded-md">
-                <p className="font-mono">Admin: admin@thrift.com</p>
-                <p className="font-mono">Password: admin123</p>
-              </div>
-              <div className="bg-card/50 p-3 rounded-md">
-                <p className="font-mono">Staff: staff@thrift.com</p>
-                <p className="font-mono">Password: staff123</p>
-              </div>
-            </div>
-          </div>
         </Card>
       </div>
     </div>
