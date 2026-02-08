@@ -84,7 +84,7 @@ export default function StaffPage() {
   const paginatedStaff = staff.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
-      <div className="space-y-8">
+      <div className="space-y-5">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">Staff Management</h1>
@@ -93,13 +93,13 @@ export default function StaffPage() {
           <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Staff</Button>
         </div>
 
-          <CardContent className="pt-5">
+          <CardContent className="pt-1">
             {loading ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">Loading staff...</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="overflow-hidden rounded-lg border border-primary/20">
                   <Table>
                     <TableHeader>
