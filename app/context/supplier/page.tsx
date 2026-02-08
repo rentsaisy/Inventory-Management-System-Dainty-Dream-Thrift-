@@ -6,8 +6,11 @@ import { useRouter } from 'next/navigation';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ChevronLeft, ChevronRight, Trash2, Pencil } from 'lucide-react';
 
 interface Supplier {
   supplier_id: number;
@@ -25,7 +28,26 @@ export default function SupplierPage() {
   const router = useRouter();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  // Add form states
+  const [newSupplierName, setNewSupplierName] = useState('');
+  const [newContactPerson, setNewContactPerson] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newAddress, setNewAddress] = useState('');
+  
+  // Edit form states
+  const [editSupplierName, setEditSupplierName] = useState('');
+  const [editContactPerson, setEditContactPerson] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editAddress, setEditAddress] = useState('');
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -39,17 +61,124 @@ export default function SupplierPage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (showEditDialog && selectedSupplier) {
+      setEditSupplierName(selectedSupplier.supplier_name);
+      setEditContactPerson(selectedSupplier.contact_person || '');
+      setEditPhone(selectedSupplier.phone || '');
+      setEditEmail(selectedSupplier.email || '');
+      setEditAddress(selectedSupplier.address || '');
+    } else {
+      setEditSupplierName('');
+      setEditContactPerson('');
+      setEditPhone('');
+      setEditEmail('');
+      setEditAddress('');
+    }
+  }, [showEditDialog, selectedSupplier]);
+
   const fetchSuppliers = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await fetch('/api/suppliers');
       if (res.ok) {
-        setSuppliers(await res.json());
+        const data = await res.json();
+        setSuppliers(data);
+      } else {
+        setError('Failed to fetch suppliers');
       }
     } catch (error) {
       console.error('Failed to fetch suppliers:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddSupplier = async () => {
+    if (!newSupplierName.trim()) {
+      alert('Supplier name is required');
+      return;
+    }
+    try {
+      const res = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          supplier_name: newSupplierName,
+          contact_person: newContactPerson || null,
+          phone: newPhone || null,
+          email: newEmail || null,
+          address: newAddress || null,
+        }),
+      });
+      if (res.ok) {
+        setNewSupplierName('');
+        setNewContactPerson('');
+        setNewPhone('');
+        setNewEmail('');
+        setNewAddress('');
+        setShowAddDialog(false);
+        fetchSuppliers();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to add supplier');
+      }
+    } catch (error) {
+      console.error('Failed to add supplier:', error);
+      alert('Error adding supplier');
+    }
+  };
+
+  const handleEditSupplier = async () => {
+    if (!selectedSupplier || !editSupplierName.trim()) {
+      alert('Supplier name is required');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/suppliers?id=${selectedSupplier.supplier_id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          supplier_name: editSupplierName,
+          contact_person: editContactPerson || null,
+          phone: editPhone || null,
+          email: editEmail || null,
+          address: editAddress || null,
+        }),
+      });
+      if (res.ok) {
+        setShowEditDialog(false);
+        setSelectedSupplier(null);
+        fetchSuppliers();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update supplier');
+      }
+    } catch (error) {
+      console.error('Failed to edit supplier:', error);
+      alert('Error updating supplier');
+    }
+  };
+
+  const handleDeleteSupplier = async () => {
+    if (!selectedSupplier) return;
+    try {
+      const res = await fetch(`/api/suppliers?id=${selectedSupplier.supplier_id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setSelectedSupplier(null);
+        setShowDeleteDialog(false);
+        fetchSuppliers();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete supplier');
+      }
+    } catch (error) {
+      console.error('Failed to delete supplier:', error);
+      alert('Error deleting supplier');
     }
   };
 
@@ -75,109 +204,247 @@ export default function SupplierPage() {
   const paginatedSuppliers = suppliers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
-    <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">Suppliers</h1>
-            <p className="text-muted-foreground mt-2">Manage your suppliers</p>
-          </div>
-          {user.role === 'admin' && <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Supplier</Button>}
+    <div className="space-y-5">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">Suppliers</h1>
+          <p className="text-muted-foreground mt-2">Manage your suppliers</p>
         </div>
+        {user.role === 'admin' && (
+          <>
+            <Button 
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              onClick={() => setShowAddDialog(true)}
+            >
+              Add
+            </Button>
+            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add New Supplier</DialogTitle>
+                  <DialogDescription>Create a new supplier</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <Input
+                    placeholder="Supplier Name"
+                    value={newSupplierName}
+                    onChange={(e) => setNewSupplierName(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Contact Person"
+                    value={newContactPerson}
+                    onChange={(e) => setNewContactPerson(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Phone Number"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Address"
+                    value={newAddress}
+                    onChange={(e) => setNewAddress(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddSupplier}>Add Supplier</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
+      </div>
 
-          <CardContent className="pt-5">
-            {loading ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Loading suppliers...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="overflow-hidden rounded-lg border border-primary/20">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20">
-                        <TableHead className="font-bold text-primary-foreground w-12">No.</TableHead>
-                        <TableHead className="font-bold text-primary-foreground">Supplier Name</TableHead>
-                        <TableHead className="font-bold text-primary-foreground">Contact Person</TableHead>
-                        <TableHead className="font-bold text-primary-foreground">Phone</TableHead>
-                        <TableHead className="font-bold text-primary-foreground">Email</TableHead>
-                        {user.role === 'admin' && <TableHead className="font-bold text-primary-foreground text-right">Actions</TableHead>}
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Supplier</DialogTitle>
+            <DialogDescription>Update supplier information</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              placeholder="Supplier Name"
+              value={editSupplierName}
+              onChange={(e) => setEditSupplierName(e.target.value)}
+            />
+            <Input
+              placeholder="Contact Person"
+              value={editContactPerson}
+              onChange={(e) => setEditContactPerson(e.target.value)}
+            />
+            <Input
+              placeholder="Phone Number"
+              value={editPhone}
+              onChange={(e) => setEditPhone(e.target.value)}
+            />
+            <Input
+              placeholder="Email"
+              value={editEmail}
+              onChange={(e) => setEditEmail(e.target.value)}
+            />
+            <Input
+              placeholder="Address"
+              value={editAddress}
+              onChange={(e) => setEditAddress(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditSupplier}>Save Changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Alert */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Supplier</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            Are you sure you want to delete "{selectedSupplier?.supplier_name}"? This action cannot be undone.
+          </AlertDialogDescription>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSupplier} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+        <CardContent className="pt-2">
+          {loading ? (
+            <div className="text-center py-2">
+              <p className="text-muted-foreground text-sm">Loading suppliers...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-2">
+              <p className="text-red-500 text-sm">{error}</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <div className="overflow-hidden rounded-lg border border-primary/20">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gradient-to-r from-primary to-primary/70 border-b border-primary/20 h-10">
+                      <TableHead className="font-bold text-primary-foreground w-12 text-sm px-3 py-2">No.</TableHead>
+                      <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Supplier Name</TableHead>
+                      <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Contact Person</TableHead>
+                      <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Phone</TableHead>
+                      <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2">Email</TableHead>
+                      <TableHead className="font-bold text-primary-foreground text-sm px-3 py-2 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedSuppliers.length === 0 ? (
+                      <TableRow className="hover:bg-card/50">
+                        <TableCell colSpan={6} className="text-center py-4 h-11">
+                          <p className="text-muted-foreground text-sm">No suppliers found</p>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedSuppliers.length === 0 ? (
-                        <TableRow className="hover:bg-card/50">
-                          <TableCell colSpan={user.role === 'admin' ? 6 : 5} className="text-center py-8">
-                            <p className="text-muted-foreground">No suppliers found</p>
+                    ) : (
+                      paginatedSuppliers.map((supplier, index) => (
+                        <TableRow key={supplier.supplier_id} className="transition-colors border-b border-primary/10 hover:bg-card/50 h-11">
+                          <TableCell className="font-semibold text-primary text-sm px-3 py-3">{startIndex + index + 1}</TableCell>
+                          <TableCell className="font-medium text-foreground text-sm px-3 py-3">{supplier.supplier_name}</TableCell>
+                          <TableCell className="text-foreground text-sm px-3 py-3">{supplier.contact_person || 'N/A'}</TableCell>
+                          <TableCell className="text-foreground text-sm px-3 py-3">{supplier.phone || 'N/A'}</TableCell>
+                          <TableCell className="text-foreground text-sm px-3 py-3">{supplier.email || 'N/A'}</TableCell>
+                          <TableCell className="flex gap-1 px-3 py-3 justify-end">
+                            {user?.role === 'admin' && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => {
+                                    setSelectedSupplier(supplier);
+                                    setShowEditDialog(true);
+                                  }}
+                                  title="Edit supplier"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => {
+                                    setSelectedSupplier(supplier);
+                                    setShowDeleteDialog(true);
+                                  }}
+                                  title="Delete supplier"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </>
+                            )}
                           </TableCell>
                         </TableRow>
-                      ) : (
-                        paginatedSuppliers.map((supplier, index) => (
-                          <TableRow key={supplier.supplier_id} className="hover:bg-card/50 transition-colors border-b border-primary/10">
-                            <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
-                            <TableCell className="font-medium text-foreground">{supplier.supplier_name}</TableCell>
-                            <TableCell className="text-foreground">{supplier.contact_person || 'N/A'}</TableCell>
-                            <TableCell className="text-foreground">{supplier.phone || 'N/A'}</TableCell>
-                            <TableCell className="text-foreground">{supplier.email || 'N/A'}</TableCell>
-                            {user.role === 'admin' && (
-                              <TableCell className="text-right">
-                                <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary text-foreground">
-                                  Edit
-                                </Button>
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6 px-2">
-                    <div className="text-sm text-muted-foreground">
-                      Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, suppliers.length)} of {suppliers.length} suppliers
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="flex items-center gap-1"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        Previous
-                      </Button>
-                      <div className="flex items-center gap-2 px-3">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <Button
-                            key={page}
-                            variant={currentPage === page ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className={currentPage === page ? 'bg-primary text-white' : ''}
-                          >
-                            {page}
-                          </Button>
-                        ))}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="flex items-center gap-1"
-                      >
-                        Next
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            )}
-          </CardContent>
-      </div>
-    );
-  }
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 px-2">
+                  <div className="text-xs text-muted-foreground">
+                    Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, suppliers.length)} of {suppliers.length} suppliers
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="flex items-center gap-1 h-8"
+                    >
+                      <ChevronLeft className="w-3 h-3" />
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1 px-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className={`h-8 w-8 p-0 ${currentPage === page ? 'bg-primary text-white' : ''}`}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center gap-1 h-8"
+                    >
+                      Next
+                      <ChevronRight className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+    </div>
+  );
+}
