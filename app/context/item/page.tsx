@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 
 interface Item {
   item_id: number;
@@ -31,6 +31,7 @@ export default function ItemPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -75,19 +76,45 @@ export default function ItemPage() {
     return null;
   }
 
+  const handleDeleteItem = async () => {
+    if (!selectedItem) return;
+    try {
+      const res = await fetch(`/api/items/${selectedItem.item_id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setSelectedItem(null);
+        fetchItems();
+      }
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+    }
+  };
+
   const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">Items</h1>
-            <p className="text-muted-foreground mt-2">Manage your inventory items</p>
-          </div>
-          <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Item</Button>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">Items</h1>
+          <p className="text-muted-foreground mt-2">Manage your inventory items</p>
         </div>
+        <div className="flex gap-2">
+          <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Item</Button>
+          {selectedItem && (
+            <>
+              <Button variant="outline" className="hover:bg-primary/10">Edit</Button>
+              <Button variant="destructive" onClick={handleDeleteItem} className="flex items-center gap-2">
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
 
           <CardContent className="pt-5">
             {loading ? (
@@ -106,19 +133,26 @@ export default function ItemPage() {
                         <TableHead className="font-bold text-primary-foreground text-center">Stock</TableHead>
                         <TableHead className="font-bold text-primary-foreground text-right">Purchase Price</TableHead>
                         <TableHead className="font-bold text-primary-foreground text-right">Selling Price</TableHead>
-                        <TableHead className="font-bold text-primary-foreground text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedItems.length === 0 ? (
                         <TableRow className="hover:bg-card/50">
-                          <TableCell colSpan={7} className="text-center py-8">
+                          <TableCell colSpan={6} className="text-center py-8">
                             <p className="text-muted-foreground">No items found</p>
                           </TableCell>
                         </TableRow>
                       ) : (
                         paginatedItems.map((item, index) => (
-                          <TableRow key={item.item_id} className="hover:bg-card/50 transition-colors border-b border-primary/10">
+                          <TableRow 
+                            key={item.item_id} 
+                            onClick={() => setSelectedItem(item)}
+                            className={`cursor-pointer transition-colors border-b border-primary/10 ${
+                              selectedItem?.item_id === item.item_id 
+                                ? 'bg-primary/15 hover:bg-primary/20' 
+                                : 'hover:bg-card/50'
+                            }`}
+                          >
                             <TableCell className="font-semibold text-primary">{startIndex + index + 1}</TableCell>
                             <TableCell className="font-medium text-foreground">{item.item_name}</TableCell>
                             <TableCell className="text-foreground">{item.category_name || 'N/A'}</TableCell>
@@ -129,11 +163,6 @@ export default function ItemPage() {
                             </TableCell>
                             <TableCell className="text-right text-foreground">${item.purchase_price.toFixed(2)}</TableCell>
                             <TableCell className="text-right font-semibold text-foreground">${item.selling_price.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" className="hover:bg-primary/20 hover:text-primary text-foreground">
-                                Edit
-                              </Button>
-                            </TableCell>
                           </TableRow>
                         ))
                       )}

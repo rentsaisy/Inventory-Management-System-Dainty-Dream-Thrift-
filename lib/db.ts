@@ -20,7 +20,7 @@ export async function query(sql: string, values?: any[]) {
       connection.release();
     }
   } catch (error) {
-    console.error('Database query error:', error);
+    console.error('Database error:', error);
     throw error;
   }
 }
@@ -28,3 +28,4 @@ export async function query(sql: string, values?: any[]) {
 export async function getConnection() {
   return pool.getConnection();
 }
+
