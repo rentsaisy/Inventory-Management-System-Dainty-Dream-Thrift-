@@ -1,17 +1,19 @@
 'use client';
 
-import React from "react"
-
+import React from 'react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import Sidebar from './Sidebar';
-import Topbar from './Topbar';
+import Sidebar from '@/components/Sidebar';
+import Topbar from '@/components/Topbar';
 
-export default function AppLayout({ children, role }: { children: React.ReactNode; role?: 'admin' | 'staff' }) {
+export default function MainLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const activeRole = role || user?.role;
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -40,7 +42,7 @@ export default function AppLayout({ children, role }: { children: React.ReactNod
     <div className="h-screen flex flex-col bg-background">
       <Topbar user={user} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar role={activeRole as 'admin' | 'staff'} />
+        <Sidebar role={user.role as 'admin' | 'staff'} />
         <main className="flex-1 overflow-auto">
           <div className="p-6">{children}</div>
         </main>

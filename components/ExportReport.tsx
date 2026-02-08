@@ -1,12 +1,21 @@
 'use client';
 
-import { useInventory } from '@/app/context/InventoryContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useState } from 'react';
 
-export default function ExportReport() {
-  const { items } = useInventory();
+interface InventoryReport {
+  item_id: number;
+  item_name: string;
+  category_name: string;
+  current_stock: number;
+  purchase_price: number;
+  selling_price: number;
+  stock_value: number;
+  total_sold: number;
+}
+
+export default function ExportReport({ data }: { data: InventoryReport[] }) {
   const [isExporting, setIsExporting] = useState(false);
 
   const exportToCSV = () => {
@@ -17,26 +26,20 @@ export default function ExportReport() {
       const headers = [
         'Item Name',
         'Category',
-        'Condition',
-        'Quantity',
-        'Unit Price',
-        'Total Value',
-        'Description',
-        'Date Added',
-        'Last Updated',
+        'Current Stock',
+        'Purchase Price',
+        'Selling Price',
+        'Stock Value',
       ];
 
       // Create CSV rows
-      const rows = items.map((item) => [
-        item.name,
-        item.category,
-        item.condition,
-        item.quantity,
-        item.price.toFixed(2),
-        (item.quantity * item.price).toFixed(2),
-        item.description,
-        item.dateAdded,
-        item.lastUpdated,
+      const rows = data.map((item) => [
+        item.item_name,
+        item.category_name,
+        item.current_stock,
+        item.purchase_price.toFixed(2),
+        item.selling_price.toFixed(2),
+        item.stock_value.toFixed(2),
       ]);
 
       // Combine headers and rows
@@ -55,7 +58,7 @@ export default function ExportReport() {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('[v0] Export failed:', error);
+      console.error('Export failed:', error);
     } finally {
       setIsExporting(false);
     }
@@ -65,15 +68,17 @@ export default function ExportReport() {
     setIsExporting(true);
 
     try {
-      const data = {
+      const totalValue = data.reduce((sum, item) => sum + item.stock_value, 0);
+      const totalUnits = data.reduce((sum, item) => sum + item.current_stock, 0);
+      const exportData = {
         exportDate: new Date().toISOString(),
-        totalItems: items.length,
-        totalUnits: items.reduce((sum, item) => sum + item.quantity, 0),
-        totalValue: items.reduce((sum, item) => sum + item.quantity * item.price, 0),
-        items: items,
+        totalItems: data.length,
+        totalUnits,
+        totalValue,
+        items: data,
       };
 
-      const jsonContent = JSON.stringify(data, null, 2);
+      const jsonContent = JSON.stringify(exportData, null, 2);
       const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
@@ -86,35 +91,29 @@ export default function ExportReport() {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('[v0] Export failed:', error);
+      console.error('Export failed:', error);
     } finally {
       setIsExporting(false);
     }
   };
 
   return (
-    <Card className="border-primary/20 p-6">
-      <h2 className="text-xl font-bold text-foreground mb-4">Export Inventory Report</h2>
-      <p className="text-muted-foreground text-sm mb-6">Download your inventory data in CSV or JSON format</p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Button
-          onClick={exportToCSV}
-          disabled={isExporting || items.length === 0}
-          className="bg-primary hover:bg-primary/90 text-white font-semibold py-6"
-        >
-          {isExporting ? 'Exporting...' : 'Export as CSV'}
-        </Button>
-        <Button
-          onClick={exportToJSON}
-          disabled={isExporting || items.length === 0}
-          className="bg-accent hover:bg-accent/90 text-foreground font-semibold py-6"
-        >
-          {isExporting ? 'Exporting...' : 'Export as JSON'}
-        </Button>
-      </div>
-
-      {items.length === 0 && <p className="text-muted-foreground text-sm mt-4">No items to export</p>}
-    </Card>
+    <div className="flex gap-2">
+      <Button
+        onClick={exportToCSV}
+        disabled={isExporting || data.length === 0}
+        size="sm"
+      >
+        {isExporting ? 'Exporting...' : 'Export CSV'}
+      </Button>
+      <Button
+        onClick={exportToJSON}
+        disabled={isExporting || data.length === 0}
+        size="sm"
+        variant="outline"
+      >
+        {isExporting ? 'Exporting...' : 'Export JSON'}
+      </Button>
+    </div>
   );
 }

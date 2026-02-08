@@ -1,111 +1,136 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type ItemCategory = 'clothing' | 'furniture' | 'electronics' | 'books' | 'other';
-export type ItemCondition = 'excellent' | 'good' | 'fair' | 'poor';
+export interface Item {
+  item_id: number;
+  item_name: string;
+  category_id: number;
+  size?: string;
+  color?: string;
+  brand?: string;
+  purchase_price: number;
+  selling_price: number;
+  current_stock: number;
+  category_name?: string;
+}
 
-export interface InventoryItem {
-  id: string;
-  name: string;
-  category: ItemCategory;
+export interface Category {
+  category_id: number;
+  category_name: string;
+  description?: string;
+}
+
+export interface Supplier {
+  supplier_id: number;
+  supplier_name: string;
+  contact_person?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+}
+
+export interface StockIn {
+  stock_in_id: number;
+  item_id: number;
   quantity: number;
-  condition: ItemCondition;
-  price: number;
-  description: string;
-  dateAdded: string;
-  lastUpdated: string;
+  purchase_price: number;
+  date_in: string;
+  supplier_id: number;
+  reference_no?: string;
+  item_name?: string;
+  supplier_name?: string;
+}
+
+export interface StockOut {
+  stock_out_id: number;
+  item_id: number;
+  quantity: number;
+  selling_price: number;
+  date_out: string;
+  user_id: number;
+  item_name?: string;
+  username?: string;
 }
 
 interface InventoryContextType {
-  items: InventoryItem[];
-  addItem: (item: Omit<InventoryItem, 'id' | 'dateAdded' | 'lastUpdated'>) => void;
-  updateItem: (id: string, item: Partial<InventoryItem>) => void;
-  deleteItem: (id: string) => void;
-  getItem: (id: string) => InventoryItem | undefined;
+  items: Item[];
+  categories: Category[];
+  suppliers: Supplier[];
+  stockIn: StockIn[];
+  stockOut: StockOut[];
+  loading: boolean;
+  refreshItems: () => Promise<void>;
+  refreshCategories: () => Promise<void>;
+  refreshSuppliers: () => Promise<void>;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
-const INITIAL_ITEMS: InventoryItem[] = [
-  {
-    id: '1',
-    name: 'Vintage Denim Jacket',
-    category: 'clothing',
-    quantity: 3,
-    condition: 'good',
-    price: 24.99,
-    description: 'Classic blue denim jacket from the 90s',
-    dateAdded: '2024-01-15',
-    lastUpdated: '2024-02-08',
-  },
-  {
-    id: '2',
-    name: 'Oak Wood Bookshelf',
-    category: 'furniture',
-    quantity: 1,
-    condition: 'excellent',
-    price: 89.99,
-    description: 'Solid oak bookshelf, 5 shelves',
-    dateAdded: '2024-01-20',
-    lastUpdated: '2024-02-08',
-  },
-];
+export function InventoryProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<Item[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [stockIn, setStockIn] = useState<StockIn[]>([]);
+  const [stockOut, setStockOut] = useState<StockOut[]>([]);
+  const [loading, setLoading] = useState(false);
 
-export function InventoryProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<InventoryItem[]>([]);
-
-  useEffect(() => {
-    // Load from localStorage on mount
-    const storedItems = localStorage.getItem('thrift_inventory');
-    if (storedItems) {
-      try {
-        setItems(JSON.parse(storedItems));
-      } catch (error) {
-        console.error('[v0] Failed to parse stored inventory:', error);
-        setItems(INITIAL_ITEMS);
+  const refreshItems = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/items');
+      if (res.ok) {
+        setItems(await res.json());
       }
-    } else {
-      setItems(INITIAL_ITEMS);
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
+    } finally {
+      setLoading(false);
     }
-  }, []);
-
-  const addItem = (item: Omit<InventoryItem, 'id' | 'dateAdded' | 'lastUpdated'>) => {
-    const newItem: InventoryItem = {
-      ...item,
-      id: Math.random().toString(36).substr(2, 9),
-      dateAdded: new Date().toISOString().split('T')[0],
-      lastUpdated: new Date().toISOString().split('T')[0],
-    };
-    const updatedItems = [...items, newItem];
-    setItems(updatedItems);
-    localStorage.setItem('thrift_inventory', JSON.stringify(updatedItems));
   };
 
-  const updateItem = (id: string, updatedData: Partial<InventoryItem>) => {
-    const updatedItems = items.map((item) =>
-      item.id === id
-        ? {
-            ...item,
-            ...updatedData,
-            lastUpdated: new Date().toISOString().split('T')[0],
-          }
-        : item
-    );
-    setItems(updatedItems);
-    localStorage.setItem('thrift_inventory', JSON.stringify(updatedItems));
+  const refreshCategories = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        setCategories(await res.json());
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const deleteItem = (id: string) => {
-    const updatedItems = items.filter((item) => item.id !== id);
-    setItems(updatedItems);
-    localStorage.setItem('thrift_inventory', JSON.stringify(updatedItems));
+  const refreshSuppliers = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/suppliers');
+      if (res.ok) {
+        setSuppliers(await res.json());
+      }
+    } catch (error) {
+      console.error('Failed to fetch suppliers:', error);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const getItem = (id: string) => items.find((item) => item.id === id);
 
   return (
-    <InventoryContext.Provider value={{ items, addItem, updateItem, deleteItem, getItem }}>
+    <InventoryContext.Provider
+      value={{
+        items,
+        categories,
+        suppliers,
+        stockIn,
+        stockOut,
+        loading,
+        refreshItems,
+        refreshCategories,
+        refreshSuppliers,
+      }}
+    >
       {children}
     </InventoryContext.Provider>
   );
