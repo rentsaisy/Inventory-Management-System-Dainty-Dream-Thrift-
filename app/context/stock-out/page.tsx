@@ -86,12 +86,7 @@ export default function StockOutPage() {
           <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Stock Out</Button>
         </div>
 
-        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-foreground">Stock Out Records</CardTitle>
-            <CardDescription>All outgoing stock transactions ({stockOut.length} total)</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-5">
             {loading ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">Loading stock out records...</p>
@@ -189,7 +184,6 @@ export default function StockOutPage() {
               </div>
             )}
           </CardContent>
-        </Card>
       </div>
     );
   }

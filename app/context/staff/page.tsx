@@ -93,12 +93,7 @@ export default function StaffPage() {
           <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">Add Staff</Button>
         </div>
 
-        <Card className="border-primary/20 bg-card/50 backdrop-blur-sm shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-foreground">Staff List</CardTitle>
-            <CardDescription>All staff members in your system ({staff.length} total)</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-5">
             {loading ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">Loading staff...</p>
@@ -194,7 +189,6 @@ export default function StaffPage() {
               </div>
             )}
           </CardContent>
-        </Card>
       </div>
     );
   }
