@@ -5,6 +5,24 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, TrendingUp, TrendingDown, Package } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import { ChartContainer } from '@/components/ui/chart';
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
@@ -14,7 +32,12 @@ export default function DashboardPage() {
     lowStockItems: 0,
     totalSuppliers: 0,
     totalCategories: 0,
+    totalInventoryValue: 0,
   });
+  const [lowStockData, setLowStockData] = useState<any[]>([]);
+  const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [stockTrendData, setStockTrendData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -25,28 +48,83 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [itemsRes, categoriesRes, suppliersRes] = await Promise.all([
+        setLoading(true);
+        const [itemsRes, categoriesRes, suppliersRes, stockInRes, stockOutRes] = await Promise.all([
           fetch('/api/items'),
           fetch('/api/categories'),
           fetch('/api/suppliers'),
+          fetch('/api/stock-in'),
+          fetch('/api/stock-out'),
         ]);
 
-        if (itemsRes.ok && categoriesRes.ok && suppliersRes.ok) {
+        if (itemsRes.ok && categoriesRes.ok && suppliersRes.ok && stockInRes.ok && stockOutRes.ok) {
           const items = await itemsRes.json();
           const categories = await categoriesRes.json();
           const suppliers = await suppliersRes.json();
+          const stockInData = await stockInRes.json();
+          const stockOutData = await stockOutRes.json();
 
-          const lowStock = items.filter((item: any) => item.current_stock < 10).length;
+          // Calculate low stock items
+          const lowStock = items.filter((item: any) => item.current_stock < 10);
+          
+          // Calculate total inventory value
+          const totalValue = items.reduce((sum: number, item: any) => {
+            return sum + (item.current_stock * item.purchase_price);
+          }, 0);
 
           setStats({
             totalItems: items.length,
-            lowStockItems: lowStock,
+            lowStockItems: lowStock.length,
             totalSuppliers: suppliers.length,
             totalCategories: categories.length,
+            totalInventoryValue: totalValue,
           });
+
+          // Prepare data for low stock chart
+          const lowStockChart = lowStock
+            .sort((a: any, b: any) => a.current_stock - b.current_stock)
+            .slice(0, 8)
+            .map((item: any) => ({
+              name: item.item_name,
+              stock: item.current_stock,
+            }));
+          setLowStockData(lowStockChart);
+
+          // Prepare data for category chart
+          const categoryValueMap: { [key: string]: number } = {};
+          items.forEach((item: any) => {
+            const categoryName = item.category_name || 'Uncategorized';
+            categoryValueMap[categoryName] = (categoryValueMap[categoryName] || 0) + (item.current_stock * item.purchase_price);
+          });
+          
+          const categoryChart = Object.entries(categoryValueMap).map(([name, value]) => ({
+            name,
+            value: Math.round(value),
+          }));
+          setCategoryData(categoryChart);
+
+          // Prepare data for stock trend
+          const last30Days = Array.from({ length: 30 }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (29 - i));
+            return date.toISOString().split('T')[0];
+          });
+
+          const trendData = last30Days.map((date) => {
+            const inCount = stockInData.filter((s: any) => s.date_in.startsWith(date)).reduce((sum: number, s: any) => sum + s.quantity, 0);
+            const outCount = stockOutData.filter((s: any) => s.date_out.startsWith(date)).reduce((sum: number, s: any) => sum + s.quantity, 0);
+            return {
+              date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              stockIn: inCount,
+              stockOut: outCount,
+            };
+          });
+          setStockTrendData(trendData);
         }
       } catch (error) {
         console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -73,88 +151,148 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Welcome back, {user.name}!</p>
-        </div>
+    <div className="space-y-3">
+      <div>
+        <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Welcome back, {user.name}!</p>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-              <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m0 0l8 4m-8-4v10l8 4m0-10l8 4m-8-4l8-4" />
-              </svg>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalItems}</div>
-              <p className="text-xs text-muted-foreground">Total items in system</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
-              <svg className="h-4 w-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.lowStockItems}</div>
-              <p className="text-xs text-muted-foreground">Items below 10 units</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21H3v-2a6 6 0 0112 0v2h4v-2a6 6 0 00-9-5.63" />
-              </svg>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalCategories}</div>
-              <p className="text-xs text-muted-foreground">Total categories</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Suppliers</CardTitle>
-              <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H1m11 0a3 3 0 11-6 0m6 0a3 3 0 10-6 0m0 0H0m6 6h12" />
-              </svg>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalSuppliers}</div>
-              <p className="text-xs text-muted-foreground">Total suppliers</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>System Status</CardTitle>
-            <CardDescription>Overview of your inventory management system</CardDescription>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+        <Card className="p-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-0">
+            <CardTitle className="text-xs font-medium">Total Items</CardTitle>
+            <Package className="h-3 w-3 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Database Connection</span>
-                <span className="text-sm font-medium text-green-600">✓ Connected</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">User Role</span>
-                <span className="text-sm font-medium capitalize">{user.role}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">System Status</span>
-                <span className="text-sm font-medium text-green-600">✓ Running</span>
-              </div>
-            </div>
+          <CardContent className="p-0 pt-1">
+            <div className="text-xl font-bold">{stats.totalItems}</div>
+            <p className="text-xs text-muted-foreground">Product types</p>
+          </CardContent>
+        </Card>
+
+        <Card className="p-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-0">
+            <CardTitle className="text-xs font-medium">Total Value</CardTitle>
+            <TrendingUp className="h-3 w-3 text-green-500" />
+          </CardHeader>
+          <CardContent className="p-0 pt-1">
+            <div className="text-xl font-bold">${stats.totalInventoryValue.toFixed(0)}</div>
+            <p className="text-xs text-muted-foreground">Inventory value</p>
+          </CardContent>
+        </Card>
+
+        <Card className="p-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-0">
+            <CardTitle className="text-xs font-medium">Low Stock</CardTitle>
+            <AlertCircle className="h-3 w-3 text-orange-500" />
+          </CardHeader>
+          <CardContent className="p-0 pt-1">
+            <div className="text-xl font-bold text-orange-500">{stats.lowStockItems}</div>
+            <p className="text-xs text-muted-foreground">Below 10 units</p>
+          </CardContent>
+        </Card>
+
+        <Card className="p-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-0">
+            <CardTitle className="text-xs font-medium">Categories</CardTitle>
+            <Package className="h-3 w-3 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-0 pt-1">
+            <div className="text-xl font-bold">{stats.totalCategories}</div>
+            <p className="text-xs text-muted-foreground">Total categories</p>
           </CardContent>
         </Card>
       </div>
-    );
-  }
+
+      {/* Charts Section */}
+      {!loading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+          {/* Low Stock Items Chart */}
+          {lowStockData.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Low Stock Items</CardTitle>
+                <CardDescription className="text-xs">Below 10 units</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={lowStockData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Bar dataKey="stock" fill="#f97316" name="Stock Level" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Inventory Value by Category Chart */}
+          {categoryData.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Value by Category</CardTitle>
+                <CardDescription className="text-xs">Inventory distribution</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: $${value}`}
+                      outerRadius={60}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'][index % 8]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `$${value}`} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Stock In/Out Trend */}
+      {stockTrendData.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Stock Trend (Last 30 Days)</CardTitle>
+            <CardDescription className="text-xs">Incoming vs outgoing activity</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={stockTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <Line type="monotone" dataKey="stockIn" stroke="#10b981" name="Stock In" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="stockOut" stroke="#ef4444" name="Stock Out" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Low Stock Alert */}
+      {stats.lowStockItems > 0 && (
+        <Alert className="border-orange-500/50 bg-orange-500/10">
+          <AlertCircle className="h-4 w-4 text-orange-500" />
+          <AlertDescription className="text-orange-800">
+            <strong>{stats.lowStockItems} items</strong> are running low on stock. Please consider restocking.
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+}
