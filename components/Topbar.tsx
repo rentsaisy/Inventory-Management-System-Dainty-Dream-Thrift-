@@ -2,6 +2,7 @@
 
 import { useAuth, type User } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,10 +16,24 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 export default function Topbar({ user }: { user: User }) {
   const { logout } = useAuth();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  const handleProfilePictureClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // You can handle the file upload here
+      console.log('Selected file:', file);
+      // TODO: Implement file upload logic
+    }
   };
 
   const initials = user.name
@@ -63,11 +78,12 @@ export default function Topbar({ user }: { user: User }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 bg-card border-primary/20">
-            <div className="px-4 py-3">
-              <p className="text-sm font-semibold text-foreground">{user.name}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
-              <p className="text-xs text-primary capitalize mt-1 font-semibold">{user.role}</p>
-            </div>
+            <DropdownMenuItem
+              onClick={handleProfilePictureClick}
+              className="cursor-pointer"
+            >
+              Change Profile Picture
+            </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-primary/20" />
             <DropdownMenuItem
               onClick={handleLogout}
@@ -75,6 +91,13 @@ export default function Topbar({ user }: { user: User }) {
             >
               Logout
             </DropdownMenuItem>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleProfilePictureChange}
+              className="hidden"
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
